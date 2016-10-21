@@ -317,6 +317,41 @@ describe 'crud document:', () ->
 
           done()
 
+  it 'should allow to find using where inq (number)', (done) ->
+    User.create {age: 3, name: 'user0'}, (err, user0) ->
+      should.not.exist(err)
+      User.create {age: 2, name: 'user1'}, (err, user1) ->
+        should.not.exist(err)
+        User.create {age: 3, name: 'user2'}, (err, user2) ->
+          should.not.exist(err)
+          User.find {where: {age: {inq: [3]}}}, (err, u) ->
+            should.not.exist(err)
+            should.exist(u)
+            u.should.be.instanceof(Array).and.have.lengthOf(2);
+            u[0].id.should.be.eql(user0.id)
+            u[1].id.should.be.eql(user2.id)
+
+            done()
+
+  it 'should allow to find using where inq (string)', (done) ->
+    User.create {age: 3, name: 'user'}, (err, user0) ->
+      should.not.exist(err)
+      User.create {age: 2, name: 'user'}, (err, user1) ->
+        should.not.exist(err)
+        User.create {age: 3, name: 'user'}, (err, user2) ->
+          should.not.exist(err)
+          User.create {age: 2, name: 'user3'}, (err, user3) ->
+            should.not.exist(err)
+            User.find {where: {name: {inq: ['user']}}}, (err, u) ->
+              should.not.exist(err)
+              should.exist(u)
+              u.should.be.instanceof(Array).and.have.lengthOf(3);
+              u[0].id.should.be.eql(user0.id)
+              u[1].id.should.be.eql(user1.id)
+              u[2].id.should.be.eql(user2.id)
+
+              done()
+
     it 'should invoke hooks', (done) ->
 
       events = []
