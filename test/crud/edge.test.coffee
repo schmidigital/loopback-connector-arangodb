@@ -65,3 +65,30 @@ describe 'crud edge:', () ->
           f.id.should.equal(friend.id)
 
           done()
+
+  it 'find', (done) ->
+    Friend.create {_from: 'User/EDGE_FROM', _to: 'User/EDGE_TO1', label: 'friend'}, (err, friend) ->
+      should.not.exist(err)
+      should.exist(friend)
+      should.exist(friend.id)
+      should.exist(friend._id)
+      friend._from.should.equal('User/EDGE_FROM')
+      friend._to.should.equal('User/EDGE_TO1')
+      friend.label.should.equal('friend')
+      Friend.create {_from: 'User/EDGE_FROM', _to: 'User/EDGE_TO2', label: 'friend'}, (err, friend) ->
+        should.not.exist(err)
+        should.exist(friend)
+        should.exist(friend.id)
+        should.exist(friend._id)
+        friend._from.should.equal('User/EDGE_FROM')
+        friend._to.should.equal('User/EDGE_TO2')
+        friend.label.should.equal('friend')
+        Friend.find {where : {_from: 'User/EDGE_FROM', _to: 'User/EDGE_TO1', label: 'friend'}}, (err, f) ->
+          should.not.exist(err)
+          should.exist(f)
+          f.should.be.instanceof(Array).and.have.lengthOf(1);
+          f[0]._from.should.equal('User/EDGE_FROM')
+          f[0]._to.should.equal('User/EDGE_TO1')
+          f[0].label.should.equal('friend')
+
+          done()
