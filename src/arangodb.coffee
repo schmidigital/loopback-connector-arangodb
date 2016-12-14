@@ -159,9 +159,8 @@ class ArangoDBConnector extends Connector
   ###
   _fullIdName: (model) ->
     props = @getModelClass(model).properties
-    for key, prop of props
-      _id = prop._id
-      if !_id then continue
+    for key of props
+      if key != '_id' then continue
       return key
     return false
 
@@ -300,6 +299,7 @@ class ArangoDBConnector extends Connector
 
     # Check and delete full id name if present
     fullIdName = @_fullIdName model
+
     if fullIdName then delete data[fullIdName]
 
     isEdge = @_isEdge model
