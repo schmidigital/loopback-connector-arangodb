@@ -282,7 +282,6 @@ class ArangoDBConnector extends Connector
     @param callback [Function] The callback function, called with a (possible) error object and the created objects id
   ###
   create: (model, data, options, callback) ->
-    console.log("data before", data)
     debug "create model #{model} with data: #{JSON.stringify data}" if @debug
     idValue = @getIdValue model, data
     idName = @idName model
@@ -309,8 +308,6 @@ class ArangoDBConnector extends Connector
       toName = @_toName model
       data._to = data[toName]
       delete data[toName] if toName isnt '_to'
-
-    console.log("data",data)
 
     @execute model, 'save', data, (err, result) =>
       # Change error message to pass junit test
