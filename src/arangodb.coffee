@@ -10,7 +10,7 @@ _ = require 'underscore'
 Connector = require('loopback-connector').Connector
 GeoPoint = require('loopback-datasource-juggler').GeoPoint
 debug = require('debug') 'loopback:connector:arango'
-
+chalk = require('chalk');
 
 exports.generateConnObject = generateConnObject = (settings) ->
   u = {}
@@ -73,9 +73,9 @@ class ArangoDBConnector extends Connector
     The constructor for ArangoDB connector
     @constructor
     @param dataSource [Object] Object to connect this connector to a data source
-    @option settings host [String] The host/ip address to connect with
+    @option settings host [String] The host/ ip address to connect with
     @option settings port [Number] The port to connect with
-    @option settings database/db [String] The database to connect with
+    @option settings database/ db [String] The database to connect with
     @option settings headers [Object] Object with header to include in every request
     @param dataSource [DataSource] The data source instance
   ###
@@ -283,11 +283,10 @@ class ArangoDBConnector extends Connector
     Create a new model instance for the given data
     @param model [String] The model name
     @param data [Object] The data to create
-    @param callback [Function] The callback function, called with a (possible) error object and the created object's id
+    @param callback [Function] The callback function, called with a (possible) error object and the created objects id
   ###
   create: (model, data, options, callback) ->
     debug "create model #{model} with data: #{JSON.stringify data}" if @debug
-
     idValue = @getIdValue model, data
     idName = @idName model
     if !idValue? or typeof idValue is 'undefined'
@@ -336,6 +335,9 @@ class ArangoDBConnector extends Connector
 
       if fullIdName
         data[fullIdName] = fullIdValue
+
+      data['verified'] = true
+
       callback err, idValue
 
   ###
@@ -346,7 +348,6 @@ class ArangoDBConnector extends Connector
   ###
   updateOrCreate: (model, data, options, callback) ->
     debug "updateOrCreate for Model #{model} with data: #{JSON.stringify data}" if @debug
-
     ###
       @getVersion (err, v) ->
         version = new RegExp(/[2-9]+\.[6-9]+\.[0-9]+/).test(v.version)
@@ -392,8 +393,9 @@ class ArangoDBConnector extends Connector
         if fullIdName
           data[fullIdName] = newDoc._id
           if fullIdName isnt '_id' then delete newDoc._id
-        else
-          delete newDoc._id
+          # We don't want to delete _id, do we? No, because we need it to create edges!
+          # else
+          #   delete newDoc._id
         if isEdge
           data[fromName] = result._from if fromName isnt '_from'
           data[toName] = result._to if toName isnt '_to'
@@ -785,7 +787,7 @@ class ArangoDBConnector extends Connector
     Update matching instance
     @param [String] model The model name
     @param [Object] where The search criteria
-    @param [Object] data The property/value pairs to be updated
+    @param [Object] data The property/ value pairs to be updated
     @param [Object] options
     @param [Function] callback Callback with (possible) error object or the number of affected objects
   ###
