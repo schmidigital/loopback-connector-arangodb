@@ -338,7 +338,7 @@ class ArangoDBConnector extends Connector
 
       data['verified'] = true
 
-      callback err, idValue
+      callback err, idValue, null, { data: data}
 
   ###
     Update if the model instance exists with the same id or create a new instance
