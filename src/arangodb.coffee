@@ -215,6 +215,7 @@ class ArangoDBConnector extends Connector
   ###
     Access a ArangoDB graph by name
     @param {String} name The graph name
+    @param {String} settings The graph settings
     @param callback [Function] The callback function
     @return {*}
   ###
