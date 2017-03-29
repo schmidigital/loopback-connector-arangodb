@@ -924,33 +924,52 @@ class ArangoDBConnector extends Connector
   ###
   automigrate: (models, cb) ->
     if @db
-      debug "automigrate for model #{models}" if @debug
-      if (not cb) and (typeof models is 'function')
-        cb = models
-        models = undefined
-      # First argument is a model name
-      models = [models] if typeof models is 'string'
-      models = models || Object.keys @_models
+      debug 'automigrate: check if db exists'
+      @db.get (err, db) =>
+        if (db)
+          debug 'db exists. migrating models'
 
-      async.eachSeries(models, ((model, modelCallback) =>
-        collectionName = @getCollectionName model
-        debug 'drop collection %s for model %s', collectionName, model
-        collection = @getCollection model
-        collection.drop (err) =>
-          if err
-            if err.response.body?
-              err = err.response.body
-              #  For errors other than 'ns not found' (collection doesn't exist)
-              return modelCallback err if not (err.error is true and err.errorNum is 1203 and err.errorMessage is 'unknown collection \'' + collectionName + '\'')
-          # Recreate the collection
-          debug 'create collection %s for model %s', collectionName, model
-          collection.create modelCallback
-      ), ((err) =>
-        return cb and cb err
-        @autoupdate models, cb
-      ))
+          @db.useDatabase(@settings.databaseName)
+          @automigrateModels(models, cb)
+        else
+          debug 'db not found. creating db with name ' + @settings.databaseName
+
+          @db.useDatabase('_system').createDatabase(@settings.databaseName, (err, dbCreated) =>
+            if err or not dbCreated then return cb err
+
+            @db.useDatabase(@settings.databaseName)
+            @automigrateModels(models, cb)
+          )
+
     else
       @dataSource.once 'connected', () -> @automigrate models cb
+
+  automigrateModels: (models, cb) ->
+    debug "automigrate for model #{models}" if @debug
+    if (not cb) and (typeof models is 'function')
+      cb = models
+      models = undefined
+    # First argument is a model name
+    models = [models] if typeof models is 'string'
+    models = models || Object.keys @_models
+
+    async.eachSeries(models, ((model, modelCallback) =>
+      collectionName = @getCollectionName model
+      debug 'drop collection %s for model %s', collectionName, model
+      collection = @getCollection model
+      collection.drop (err) =>
+        if err
+          if err.response.body?
+            err = err.response.body
+            #  For errors other than 'ns not found' (collection doesn't exist)
+            return modelCallback err if not (err.error is true and err.errorNum is 1203 and err.errorMessage is 'unknown collection \'' + collectionName + '\'')
+        # Recreate the collection
+        debug 'create collection %s for model %s', collectionName, model
+        collection.create modelCallback
+    ), ((err) =>
+      return cb and cb err
+      @autoupdate models, cb
+    ))
 
 ArangoDBConnector.collection = 'collection'
 ArangoDBConnector.edgeCollection = 'edgeCollection'
