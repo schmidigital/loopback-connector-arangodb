@@ -200,6 +200,33 @@ class ArangoDBConnector extends Connector
     return @db[collection] @getCollectionName model
 
   ###
+    Access a ArangoDB graph by name
+    @param {String} name The graph name
+    @param callback [Function] The callback function
+    @return {*}
+  ###
+  getGraph: (name, cb) ->
+    if not @db then throw new Error('ArangoDB connection is not established')
+
+    graphString = ArangoDBConnector.graph
+    graph = @db[graphString] name
+    graph.get cb
+
+  ###
+    Access a ArangoDB graph by name
+    @param {String} name The graph name
+    @param callback [Function] The callback function
+    @return {*}
+  ###
+  createGraph: (name, settings, cb) ->
+    if not @db then throw new Error('ArangoDB connection is not established')
+
+    graphString = ArangoDBConnector.graph
+    graph = @db[graphString] name
+    graph.create settings, cb
+
+
+  ###
     Converts the retrieved data from the database to JSON, based on the properties of a given model
     @param model [String] The model name to look up the properties
     @param data [Object] The data from DB
@@ -926,5 +953,6 @@ class ArangoDBConnector extends Connector
 
 ArangoDBConnector.collection = 'collection'
 ArangoDBConnector.edgeCollection = 'edgeCollection'
+ArangoDBConnector.graph = 'graph'
 
 exports.ArangoDBConnector = ArangoDBConnector
