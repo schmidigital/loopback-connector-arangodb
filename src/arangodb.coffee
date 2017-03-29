@@ -97,7 +97,7 @@ class ArangoDBConnector extends Connector
     debug "ArangoDB connection is called with settings: #{JSON.stringify @settings}" if @debug
     if not @db
       @db = arangojs @settings
-      @api = @db.route '_api'
+      @api = @db.route '/_api'
     process.nextTick () ->
       callback and callback null, @db
 
@@ -534,8 +534,6 @@ class ArangoDBConnector extends Connector
             when condOp is 'nin'
               aqlArray.push qb.not qb.in "#{@returnVariable}.#{condProp}", "#{assignNewQueryVariable(condValue)}"
             when condOp is 'inq'
-              #TODO fix for id and other type
-              condValue = (cond.toString() for cond in condValue)
               aqlArray.push qb.in "#{@returnVariable}.#{condProp}", "#{assignNewQueryVariable(condValue)}"
             # geo comparison (extra object)
             when condOp is 'near'
@@ -594,7 +592,7 @@ class ArangoDBConnector extends Connector
       if filter.where[toName]
         to = filter.where[toName];
         delete filter.where[toName];
-        filter.where._from = to;
+        filter.where._to = to;
 
       where = @_buildWhere(model, filter.where)
       for w in where.aqlArray
